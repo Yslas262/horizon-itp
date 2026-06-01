@@ -1,0 +1,49 @@
+{%- doc -%}
+  Premium dropdown panel content for a Shopify linklist parent link.
+
+  @param {object} parent_link - Parent navigation link with child links.
+{%- enddoc -%}
+
+<ul class="menu-dropdown__list list-unstyled" role="list">
+  {%- for childlink in parent_link.links -%}
+    <li
+      class="menu-dropdown__item{% if childlink.links != blank %} menu-dropdown__item--has-children{% endif %}"
+    >
+      <a
+        href="{{ childlink.url }}"
+        class="menu-dropdown__link{% if childlink.links != blank %} menu-dropdown__link--parent{% endif %}"
+        {% if childlink.current %}
+          aria-current="page"
+        {% endif %}
+      >
+        <span class="menu-dropdown__link-label">{{ childlink.title | escape }}</span>
+        {%- if childlink.links != blank -%}
+          <span class="svg-wrapper icon-caret menu-dropdown__link-caret" aria-hidden="true">
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </span>
+        {%- endif -%}
+      </a>
+      {%- if childlink.links != blank -%}
+        <ul
+          class="menu-dropdown__flyout list-unstyled"
+          role="list"
+          aria-label="{{ childlink.title | escape }}"
+        >
+          {%- for grandchildlink in childlink.links -%}
+            <li class="menu-dropdown__item">
+              <a
+                href="{{ grandchildlink.url }}"
+                class="menu-dropdown__link"
+                {% if grandchildlink.current %}
+                  aria-current="page"
+                {% endif %}
+              >
+                <span class="menu-dropdown__link-label">{{ grandchildlink.title | escape }}</span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ul>

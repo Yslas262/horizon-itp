@@ -2,6 +2,9 @@ import { Component } from '@theme/component';
 import { debounce, onDocumentLoaded, setHeaderMenuStyle } from '@theme/utilities';
 import { MegaMenuHoverEvent } from '@theme/events';
 
+/** @type {number} Delay before closing dropdown (ms) — prevents accidental close */
+const DROPDOWN_CLOSE_DELAY_MS = 220;
+
 /**
  * A custom element that manages a header menu.
  *
@@ -22,31 +25,172 @@ class HeaderMenu extends Component {
    */
   #submenuMutationObserver = null;
 
+  /**
+   * @type {ReturnType<typeof setTimeout> | null}
+   */
+  #closeTimer = null;
+
+  /**
+   * @type {AbortController | null}
+   */
+  #dropdownAbort = null;
+
   connectedCallback() {
     super.connectedCallback();
 
     onDocumentLoaded(this.#preloadImages);
     window.addEventListener('resize', this.#resizeListener);
     this.overflowMenu?.addEventListener('pointerleave', this.#overflowSubmenuListener);
+    document.addEventListener('focusin', this.#handleFocusIn);
+    this.#bindPremiumDropdowns();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('resize', this.#resizeListener);
     this.overflowMenu?.removeEventListener('pointerleave', this.#overflowSubmenuListener);
+    document.removeEventListener('focusin', this.#handleFocusIn);
+    this.#dropdownAbort?.abort();
+    this.#dropdownAbort = null;
+    this.#cancelScheduledClose();
     this.#cleanupMutationObserver();
   }
+
+  get #isTextDropdownMode() {
+    return this.dataset.dropdownMode === 'text';
+  }
+
+  /**
+   * Stable hover: pointer stays on trigger, bridge, panel, or flyout.
+   */
+  #bindPremiumDropdowns() {
+    this.#dropdownAbort?.abort();
+    if (!this.#isTextDropdownMode) return;
+
+    this.#dropdownAbort = new AbortController();
+    const { signal } = this.#dropdownAbort;
+
+    this.querySelectorAll('[data-menu-dropdown]').forEach((dropdown) => {
+      dropdown.addEventListener(
+        'pointerenter',
+        () => {
+          this.#cancelScheduledClose();
+          const trigger = dropdown.querySelector('[ref="menuitem"]');
+          if (trigger instanceof HTMLElement) {
+            this.activate({ target: trigger });
+          }
+        },
+        { signal }
+      );
+
+      dropdown.addEventListener(
+        'pointerleave',
+        (event) => {
+          if (event.relatedTarget instanceof Node && dropdown.contains(event.relatedTarget)) return;
+          this.#scheduleClose();
+        },
+        { signal }
+      );
+
+      dropdown.addEventListener(
+        'focusin',
+        () => {
+          this.#cancelScheduledClose();
+          const trigger = dropdown.querySelector('[ref="menuitem"]');
+          if (trigger instanceof HTMLElement) {
+            this.activate({ target: trigger });
+          }
+        },
+        { signal }
+      );
+
+      dropdown.addEventListener(
+        'focusout',
+        (event) => {
+          if (event.relatedTarget instanceof Node && dropdown.contains(event.relatedTarget)) return;
+          this.#scheduleClose();
+        },
+        { signal }
+      );
+    });
+  }
+
+  #cancelScheduledClose() {
+    if (this.#closeTimer) {
+      clearTimeout(this.#closeTimer);
+      this.#closeTimer = null;
+    }
+  }
+
+  #scheduleClose() {
+    this.#cancelScheduledClose();
+    this.#closeTimer = setTimeout(() => {
+      this.#closeTimer = null;
+      this.#deactivate();
+    }, DROPDOWN_CLOSE_DELAY_MS);
+  }
+
+  /**
+   * Keyboard support for dropdown submenus (Escape, ArrowDown into panel).
+   * @param {KeyboardEvent} event
+   */
+  handleKeydown = (event) => {
+    if (!(event.target instanceof Element)) return;
+
+    if (event.key === 'Escape') {
+      if (!this.#state.activeItem) return;
+      event.preventDefault();
+      this.#cancelScheduledClose();
+      this.#deactivate();
+      this.#state.activeItem.focus();
+      return;
+    }
+
+    const menuitem = event.target.closest('[ref="menuitem"]');
+    if (!(menuitem instanceof HTMLElement) || menuitem.getAttribute('aria-haspopup') !== 'true') return;
+
+    if (event.key === 'ArrowDown' || (event.key === ' ' && event.target === menuitem)) {
+      event.preventDefault();
+      this.#cancelScheduledClose();
+      this.activate(event);
+      const submenu = findSubmenu(menuitem);
+      const firstLink = submenu?.querySelector('.menu-dropdown__link[href], a[href]');
+      if (firstLink instanceof HTMLElement) {
+        firstLink.focus();
+      }
+    }
+  };
+
+  /**
+   * Close submenu when focus leaves the header menu entirely.
+   * @param {FocusEvent} event
+   */
+  #handleFocusIn = (event) => {
+    if (!(event.target instanceof Node)) return;
+    if (this.contains(event.target)) return;
+    if (this.overflowMenu?.contains(event.target)) return;
+
+    if (this.#isTextDropdownMode) {
+      this.#scheduleClose();
+    } else {
+      this.#deactivate();
+    }
+  };
 
   /**
    * Debounced resize event listener to recalculate menu style
    */
   #resizeListener = debounce(() => {
     setHeaderMenuStyle();
+    this.#bindPremiumDropdowns();
   }, 100);
 
-
   #overflowSubmenuListener = () => {
-    this.#deactivate();
+    if (this.#isTextDropdownMode) {
+      this.#scheduleClose();
+    } else {
+      this.#deactivate();
+    }
   };
 
   /**
@@ -77,7 +221,7 @@ class HeaderMenu extends Component {
 
   /**
    * Activate the selected menu item immediately
-   * @param {PointerEvent | FocusEvent} event
+   * @param {PointerEvent | FocusEvent | { target: Element }} event
    */
   activate = (event) => {
     this.dispatchEvent(new MegaMenuHoverEvent());
@@ -88,7 +232,10 @@ class HeaderMenu extends Component {
 
     if (!item || item == this.#state.activeItem) return;
 
+    this.#cancelScheduledClose();
+
     const isDefaultSlot = event.target.slot === '';
+    const isTextDropdown = this.#isTextDropdownMode && item.closest('[data-menu-dropdown]');
 
     this.dataset.overflowExpanded = (!isDefaultSlot).toString();
 
@@ -102,6 +249,17 @@ class HeaderMenu extends Component {
     this.ariaExpanded = 'true';
     item.ariaExpanded = 'true';
 
+    if (isTextDropdown) {
+      this.headerComponent.style.setProperty('--submenu-height', '0px');
+      this.#setFullOpenHeaderHeight(0);
+      this.style.setProperty('--submenu-opacity', '0');
+      const panel = findSubmenu(item);
+      if (panel) {
+        panel.dataset.active = '';
+      }
+      return;
+    }
+
     let submenu = findSubmenu(item);
     const hasSubmenu = Boolean(submenu);
 
@@ -110,16 +268,12 @@ class HeaderMenu extends Component {
     }
 
     if (submenu) {
-      // Mark submenu as active for content-visibility optimization
       submenu.dataset.active = '';
 
-      // Cleanup any existing mutation observer from previous menu activations
       this.#cleanupMutationObserver();
 
-      // Monitor DOM mutations to catch deferred content injection (from section hydration)
       this.#submenuMutationObserver = new MutationObserver(() => {
         requestAnimationFrame(() => {
-          // Double requestAnimationFrame to ensure the height is properly calculated and not defaulting to the contain-intrinsic-size
           requestAnimationFrame(() => {
             if (submenu.offsetHeight > 0) {
               this.headerComponent?.style.setProperty('--submenu-height', `${submenu.offsetHeight}px`);
@@ -128,9 +282,8 @@ class HeaderMenu extends Component {
           });
         });
       });
-      this.#submenuMutationObserver.observe(submenu, {childList: true, subtree: true});
+      this.#submenuMutationObserver.observe(submenu, { childList: true, subtree: true });
 
-      // Auto-disconnect after 500ms to prevent memory leaks
       setTimeout(() => {
         this.#cleanupMutationObserver();
       }, 500);
@@ -138,12 +291,9 @@ class HeaderMenu extends Component {
 
     let finalHeight = submenu?.offsetHeight || 0;
 
-    // For overflow menu, the height needs to be either content of the submenu or the total height of the menu list links
     if (!isDefaultSlot) {
       const overflowListHeight = this.#getOverflowListLinksHeight();
       if (hasSubmenu) {
-        /* Note: When the submenu is inside the overflow menu, its offsetHeight is not valid due to the lack of padding
-         * we could add the padding variables to the submenu.offsetHeight, but measuring the overflowMenu.offsetHeight is just easier */
         const overflowHeight = this.overflowMenu?.offsetHeight || 0;
         finalHeight = Math.max(overflowHeight, overflowListHeight);
       } else {
@@ -152,7 +302,6 @@ class HeaderMenu extends Component {
     }
 
     if (!submenu) {
-      // If there is no content to open, don't try to open it
       finalHeight = 0;
     }
 
@@ -162,10 +311,12 @@ class HeaderMenu extends Component {
   };
 
   /**
-   * Deactivate the active item after a delay
+   * Deactivate the active item (mega menu — immediate with guards).
    * @param {PointerEvent | FocusEvent} event
    */
   deactivate(event) {
+    if (this.#isTextDropdownMode) return;
+
     if (!(event.target instanceof Element)) return;
 
     const menu = findSubmenu(this.#state.activeItem);
@@ -181,29 +332,32 @@ class HeaderMenu extends Component {
   }
 
   /**
-   * Deactivate the active item immediately
+   * Deactivate the active item
    * @param {HTMLElement | null} [item]
    */
   #deactivate = (item = this.#state.activeItem) => {
     if (!item || item != this.#state.activeItem) return;
 
-    // Don't deactivate if the overflow menu or overflow list is still being hovered
     if (this.overflowListHovered || this.overflowMenu?.matches(':hover')) return;
+
+    const submenu = findSubmenu(item);
+    const isTextDropdown = this.#isTextDropdownMode && item.closest('[data-menu-dropdown]');
 
     this.headerComponent?.style.setProperty('--submenu-height', '0px');
     this.#setFullOpenHeaderHeight(0);
     this.style.setProperty('--submenu-opacity', '0');
     this.dataset.overflowExpanded = 'false';
 
-    const submenu = findSubmenu(item);
-
     this.#state.activeItem = null;
     this.ariaExpanded = 'false';
     item.ariaExpanded = 'false';
 
-    // Remove active state from submenu after animation completes
     if (submenu) {
       delete submenu.dataset.active;
+    }
+
+    if (isTextDropdown) {
+      return;
     }
   };
 
@@ -221,7 +375,7 @@ class HeaderMenu extends Component {
           cb(submenu);
         }
       });
-    }
+    };
 
     mapSubmenus((submenu) => {
       submenu.style.setProperty('display', 'none');
@@ -265,6 +419,11 @@ class HeaderMenu extends Component {
     this.#submenuMutationObserver?.disconnect();
     this.#submenuMutationObserver = null;
   }
+
+  updatedCallback() {
+    super.updatedCallback();
+    this.#bindPremiumDropdowns();
+  }
 }
 
 if (!customElements.get('header-menu')) {
@@ -280,19 +439,22 @@ function findMenuItem(element) {
   if (!(element instanceof Element)) return null;
 
   if (element?.matches('[slot="more"')) {
-    // Select the first overflowing menu item when hovering over the "More" item
     return findMenuItem(element.parentElement?.querySelector('[slot="overflow"]'));
   }
 
-  return element?.querySelector('[ref="menuitem"]');
+  const item = element.closest('[ref="menuitem"]');
+  return item instanceof HTMLElement ? item : null;
 }
 
 /**
- * Find the closest submenu.
+ * Find the closest submenu panel.
  * @param {Element | null | undefined} element
  * @returns {HTMLElement | null}
  */
 function findSubmenu(element) {
-  const submenu = element?.parentElement?.querySelector('[ref="submenu[]"]');
+  if (!(element instanceof Element)) return null;
+
+  const root = element.closest('[data-menu-dropdown], .menu-list__list-item');
+  const submenu = root?.querySelector('[ref="submenu[]"], .menu-dropdown__panel, .menu-list__submenu');
   return submenu instanceof HTMLElement ? submenu : null;
 }

@@ -491,6 +491,7 @@
     /* Multiple selectors for performance: each simple :has() check is faster than one complex selector with multiple conditions */
     &:has(.mega-menu__list:hover),
     &:has(.menu-list__link:is(:hover, [aria-expanded='true'])),
+    &:has(.menu-dropdown__trigger:is(:hover, [aria-expanded='true'])),
     &:has(.menu-list__list-item[slot='overflow'] .menu-list__link:is(:hover, [aria-expanded='true'])) {
       --header-logo-display: unset;
       --header-logo-inverse-display: unset;
@@ -657,6 +658,7 @@
 
     &:has(.mega-menu__list:hover),
     &:has(.menu-list__link[aria-haspopup]:is(:hover, [aria-expanded='true'])),
+    &:has(.menu-dropdown__trigger[aria-expanded='true']),
     &:has(.menu-list__list-item[slot='overflow'] .menu-list__link:is(:hover, [aria-expanded='true'])) {
       /* Only elevate the row when the submenu is open to avoid overlapping other elevated content */
       z-index: var(--layer-heightened);
@@ -939,17 +941,31 @@
     }
   }
 
-  /* Optimize layout performance for hidden menus */
-  .header-menu .menu-list__submenu {
+  /* Optimize layout performance for mega menu panels (not compact text dropdowns) */
+  .header-menu:not(.header-menu--dropdown) .menu-list__submenu {
     content-visibility: auto;
     contain-intrinsic-size: 0px 500px;
   }
 
+  .header-menu--dropdown .menu-dropdown__panel {
+    content-visibility: visible;
+    contain-intrinsic-size: auto;
+  }
+
   /* Force visibility when open/animating and in overflow submenu to prevent layout issues */
   .header-menu details[open] .menu-list__submenu,
-  .header-menu .menu-list__submenu[data-active],
+  .header-menu .menu-list__submenu[data-active]:not(.menu-dropdown__panel),
+  .header-menu .menu-dropdown__panel[data-active],
   .header-menu .menu-list__list-item[slot='overflow'] .menu-list__submenu {
     content-visibility: visible;
+  }
+
+  /* Text dropdown: keep header underlay at header height — no full-page white sheet */
+  #header-component:has(header-menu[data-dropdown-mode='text']) .header__underlay-open {
+    background: linear-gradient(
+      var(--color-scheme-top-row) 0 var(--top-row-height),
+      var(--color-scheme-bottom-row) var(--top-row-height) 100%
+    );
   }
 
   /* Dropdown Localization Styles */

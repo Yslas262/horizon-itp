@@ -18,7 +18,12 @@
       data-hydration-key="header-drawer-mobile"
       {{ block.shopify_attributes }}
     >
-      {% render 'header-drawer', linklist: block_settings.menu, data_header_drawer_type: 'mobile-drawer' %}
+      {% render 'header-drawer',
+        linklist: block_settings.menu,
+        block: block,
+        section: section,
+        data_header_drawer_type: 'mobile-drawer'
+      %}
     </div>
 
   {% when 'navigation_bar' %}
@@ -34,17 +39,49 @@
             role="list"
           >
             {% for link in block_settings.menu.links %}
-              <li>
-                <a
-                  href="{{ link.url }}"
-                  id="MenuItem-{{ link.handle }}"
-                  class="menu-list__item"
-                  {% if link.current %}
-                    aria-current="page"
-                  {% endif %}
-                >
-                  {{- link.title -}}
-                </a>
+              <li class="menu-list__list-item menu-list__list-item--nav-bar">
+                {%- if link.links != blank -%}
+                  <details class="menu-list__nav-bar-dropdown">
+                    <summary
+                      id="MenuItem-{{ link.handle }}"
+                      class="menu-list__item menu-list__item--has-children"
+                    >
+                      <span>{{ link.title | escape }}</span>
+                      <span class="svg-wrapper icon-caret menu-list__nav-bar-caret" aria-hidden="true">
+                        {{- 'icon-caret.svg' | inline_asset_content -}}
+                      </span>
+                    </summary>
+                    <ul
+                      class="menu-list__nav-bar-submenu list-unstyled"
+                      role="list"
+                    >
+                      {%- for childlink in link.links -%}
+                        <li>
+                          <a
+                            href="{{ childlink.url }}"
+                            class="menu-list__item menu-list__item--child"
+                            {% if childlink.current %}
+                              aria-current="page"
+                            {% endif %}
+                          >
+                            {{ childlink.title | escape }}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </details>
+                {%- else -%}
+                  <a
+                    href="{{ link.url }}"
+                    id="MenuItem-{{ link.handle }}"
+                    class="menu-list__item"
+                    {% if link.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    {{- link.title | escape -}}
+                  </a>
+                {%- endif -%}
               </li>
             {% endfor %}
           </ul>
@@ -79,59 +116,118 @@
 
     {% capture children %}
       {% for link in block_settings.menu.links %}
+        {% liquid
+          assign is_text_dropdown = false
+          if menu_content_type == 'text' and link.links != blank
+            assign is_text_dropdown = true
+          endif
+        %}
         <li
           role="presentation"
-          class="menu-list__list-item"
-          on:focus="/activate"
-          on:blur="/deactivate"
-          on:pointerenter="/activate"
-          on:pointerleave="/deactivate"
+          class="menu-list__list-item{% if is_text_dropdown %} menu-list__list-item--dropdown{% endif %}"
+          {% unless is_text_dropdown %}
+            on:focus="/activate"
+            on:blur="/deactivate"
+            on:pointerenter="/activate"
+            on:pointerleave="/deactivate"
+          {% endunless %}
         >
-          <a
-            href="{{ link.url }}"
-            data-skip-node-update="true"
-            class="menu-list__link{% if link.active %} menu-list__link--active{% endif %}"
-            {%- if link.links != blank -%}
-              aria-controls="submenu-{{ forloop.index }}"
-              aria-haspopup="true"
-              aria-expanded="false"
-            {%- endif -%}
-            {% if link.current %}
-              aria-current="page"
-            {% endif %}
-            ref="menuitem"
-          >
-            <span class="menu-list__link-title">{{- link.title -}}</span>
-          </a>
-          {%- if link.links != blank -%}
-            <div class="menu-list__submenu{{ color_scheme_classes }}" ref="submenu[]">
+          {% if is_text_dropdown %}
+            <div
+              class="menu-dropdown"
+              data-menu-dropdown
+            >
+              <a
+                href="{{ link.url }}"
+                id="MenuItem-{{ link.handle }}"
+                data-skip-node-update="true"
+                class="menu-list__link menu-dropdown__trigger{% if link.active %} menu-list__link--active{% endif %}"
+                aria-controls="submenu-{{ forloop.index }}"
+                aria-haspopup="true"
+                aria-expanded="false"
+                {% if link.current %}
+                  aria-current="page"
+                {% endif %}
+                ref="menuitem"
+              >
+                <span class="menu-list__link-title">
+                  {{- link.title | escape -}}
+                  <span class="svg-wrapper icon-caret menu-list__link-caret" aria-hidden="true">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                </span>
+              </a>
               <div
                 id="submenu-{{ forloop.index }}"
-                class="menu-list__submenu-inner"
+                class="menu-dropdown__panel color-{{ block_settings.color_scheme }}"
+                ref="submenu[]"
+                role="group"
+                aria-labelledby="MenuItem-{{ link.handle }}"
                 style="{% render 'submenu-font-styles', settings: block_settings %}"
               >
-                {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
-                <div class="mega-menu section section--full-width-margin section--{{ section.settings.section_width }}">
-                  <div
-                    class="mega-menu__grid"
-                    data-menu-grid-id="{{ list_id }}"
-                  >
-                    {% render 'mega-menu-list',
-                      parent_link: link,
-                      id: list_id,
-                      section: section,
-                      grid_columns_count: 6,
-                      grid_columns_count_tablet: 4,
-                      grid_columns_count_collection_images: 8,
-                      menu_content_type: menu_content_type,
-                      content_aspect_ratio: ratio,
-                      image_border_radius: image_border_radius
-                    %}
+                {% render 'header-menu-dropdown', parent_link: link %}
+              </div>
+            </div>
+          {% else %}
+            <a
+              href="{{ link.url }}"
+              id="MenuItem-{{ link.handle }}"
+              data-skip-node-update="true"
+              class="menu-list__link{% if link.active %} menu-list__link--active{% endif %}"
+              {%- if link.links != blank -%}
+                aria-controls="submenu-{{ forloop.index }}"
+                aria-haspopup="true"
+                aria-expanded="false"
+              {%- endif -%}
+              {% if link.current %}
+                aria-current="page"
+              {% endif %}
+              ref="menuitem"
+            >
+              <span class="menu-list__link-title">
+                {{- link.title | escape -}}
+                {%- if link.links != blank -%}
+                  <span class="svg-wrapper icon-caret menu-list__link-caret" aria-hidden="true">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                {%- endif -%}
+              </span>
+            </a>
+            {%- if link.links != blank -%}
+              <div
+                class="menu-list__submenu{{ color_scheme_classes }}"
+                ref="submenu[]"
+                role="group"
+                aria-labelledby="MenuItem-{{ link.handle }}"
+              >
+                <div
+                  id="submenu-{{ forloop.index }}"
+                  class="menu-list__submenu-inner"
+                  style="{% render 'submenu-font-styles', settings: block_settings %}"
+                >
+                  {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
+                  <div class="mega-menu section section--full-width-margin section--{{ section.settings.section_width }}">
+                    <div
+                      class="mega-menu__grid"
+                      data-menu-grid-id="{{ list_id }}"
+                    >
+                      {% render 'mega-menu-list',
+                        parent_link: link,
+                        id: list_id,
+                        section: section,
+                        grid_columns_count: 6,
+                        grid_columns_count_tablet: 4,
+                        grid_columns_count_collection_images: 8,
+                        menu_content_type: menu_content_type,
+                        content_aspect_ratio: ratio,
+                        image_border_radius: image_border_radius
+                      %}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          {%- endif -%}
+            {%- endif -%}
+          {% endif %}
         </li>
       {% endfor %}
       <li
@@ -151,7 +247,11 @@
 
     <header-menu
       ref="headerMenu"
-      class="header-menu"
+      class="header-menu{% if menu_content_type == 'text' %} header-menu--dropdown{% endif %}"
+      on:keydown="/handleKeydown"
+      {% if menu_content_type == 'text' %}
+        data-dropdown-mode="text"
+      {% endif %}
       {{ block.shopify_attributes }}
       data-hydration-key="header-menu"
     >
@@ -298,20 +398,210 @@
   }
 
   .menu-list__link-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-2xs);
     padding-inline: calc(var(--gap-xl) / 2);
   }
+
+  .menu-list__link-caret {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+    flex-shrink: 0;
+    transition: transform var(--animation-speed) var(--animation-easing);
+  }
+
+  .menu-list__list-item:has([aria-expanded='true']) .menu-list__link-caret svg {
+    transform: rotate(180deg);
+  }
+
   [slot='overflow'] .menu-list__link-title {
     padding-inline: 0;
   }
 
-  .menu-list__list-item:not([slot='overflow']) {
+  .menu-list__list-item:not([slot='overflow']):not(.menu-list__list-item--dropdown) {
     flex-direction: column;
   }
-  .menu-list__list-item:not([slot='overflow'])::after {
+
+  .menu-list__list-item:not([slot='overflow']):not(.menu-list__list-item--dropdown)::after {
     content: '';
     width: 100%;
     height: var(--header-padding);
     margin-bottom: calc(-1 * var(--header-padding));
+  }
+
+  /* Premium text dropdown (Impact / Prestige style) */
+  .menu-list__list-item--dropdown {
+    position: relative;
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .menu-dropdown {
+    --menu-dropdown-bridge: 10px;
+    --menu-dropdown-ease: var(--ease-out-cubic);
+    --menu-dropdown-speed: 0.22s;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .menu-dropdown__panel {
+    --submenu-content-opacity: 0;
+
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: calc(var(--layer-header-menu) + 2);
+    min-width: 13.5rem;
+    width: max-content;
+    max-width: min(22rem, calc(100vw - var(--padding-md) * 2));
+    margin: 0;
+    padding: var(--padding-xs);
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    background-color: var(--color-background);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+    border-radius: var(--style-border-radius-popover);
+    box-shadow: var(--shadow-popover);
+    transition:
+      opacity var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      transform var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      visibility 0s linear var(--menu-dropdown-speed);
+  }
+
+  /* Invisible bridge — no dead zone between trigger and panel */
+  .menu-dropdown__panel::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--menu-dropdown-bridge);
+  }
+
+  .menu-dropdown:has(.menu-dropdown__trigger[aria-expanded='true']) .menu-dropdown__panel,
+  .menu-dropdown__panel:is(:hover, :focus-within),
+  .menu-dropdown__panel[data-active] {
+    --submenu-content-opacity: 1;
+
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      transform var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      visibility 0s;
+  }
+
+  .menu-dropdown__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .menu-dropdown__item {
+    position: relative;
+    margin: 0;
+  }
+
+  .menu-dropdown__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border-radius: calc(var(--style-border-radius-popover) - 2px);
+    font-family: var(--menu-child-font-family);
+    font-style: var(--menu-child-font-style);
+    font-weight: var(--menu-child-font-weight);
+    font-size: var(--menu-child-font-size);
+    line-height: var(--menu-child-font-line-height);
+    text-transform: var(--menu-child-font-case);
+    color: var(--menu-child-font-color);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color var(--animation-speed) var(--animation-easing),
+      background-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .menu-dropdown__link:hover,
+  .menu-dropdown__link:focus-visible {
+    color: var(--menu-child-active-font-color);
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-8));
+  }
+
+  .menu-dropdown__link--parent .menu-dropdown__link-caret {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+    flex-shrink: 0;
+    opacity: 0.55;
+    transform: rotate(-90deg);
+  }
+
+  .menu-dropdown__flyout {
+    position: absolute;
+    top: -0.35rem;
+    left: calc(100% - 4px);
+    z-index: calc(var(--layer-header-menu) + 3);
+    min-width: 12rem;
+    margin: 0;
+    padding: var(--padding-xs);
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(6px);
+    background-color: var(--color-background);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+    border-radius: var(--style-border-radius-popover);
+    box-shadow: var(--shadow-popover);
+    transition:
+      opacity var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      transform var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      visibility 0s linear var(--menu-dropdown-speed);
+  }
+
+  .menu-dropdown__flyout::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: 8px;
+  }
+
+  .menu-dropdown__item--has-children:hover > .menu-dropdown__flyout,
+  .menu-dropdown__item--has-children:focus-within > .menu-dropdown__flyout {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateX(0);
+    transition:
+      opacity var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      transform var(--menu-dropdown-speed) var(--menu-dropdown-ease),
+      visibility 0s;
+  }
+
+  .header-menu--dropdown .menu-list__list-item--dropdown .menu-list__link-caret svg {
+    transform: rotate(0deg);
+  }
+
+  .header-menu--dropdown .menu-dropdown:has(.menu-dropdown__trigger[aria-expanded='true']) .menu-list__link-caret svg {
+    transform: rotate(180deg);
+  }
+
+  /* Text dropdown: no full-width mega panel */
+  .header-menu--dropdown .menu-list__list-item--dropdown > .menu-list__submenu {
+    display: none;
   }
 
   [slot='overflow'] > .menu-list__link::after {
@@ -383,6 +673,67 @@
   transition: visibility 0s, opacity var(--submenu-animation-speed) var(--ease-out-cubic);
 }
 
+  .menu-list__nav-bar-dropdown {
+    position: relative;
+  }
+
+  .menu-list__nav-bar-dropdown > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .menu-list__nav-bar-dropdown > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu-list__item--has-children {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+  }
+
+  .menu-list__nav-bar-caret {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+    flex-shrink: 0;
+    transition: transform var(--animation-speed) var(--animation-easing);
+  }
+
+  .menu-list__nav-bar-dropdown[open] .menu-list__nav-bar-caret svg {
+    transform: rotate(180deg);
+  }
+
+  .menu-list__nav-bar-submenu {
+    position: absolute;
+    top: calc(100% + var(--padding-2xs));
+    left: 0;
+    z-index: var(--layer-header-menu);
+    min-width: 10rem;
+    padding: var(--padding-xs);
+    border-radius: var(--style-border-radius-popover);
+    border: var(--style-border-popover);
+    box-shadow: var(--shadow-popover);
+    background-color: var(--color-background);
+  }
+
+  .menu-list__list-item--nav-bar {
+    position: relative;
+  }
+
+  .menu-list__item--child {
+    display: block;
+    padding: var(--padding-2xs) var(--padding-sm);
+    color: var(--color-foreground);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .menu-list__item--child:hover {
+    color: var(--color-foreground);
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-8));
+    border-radius: var(--style-border-radius-buttons-primary);
+  }
+
   [data-submenu-overlap-bottom-row] {
     .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu,
     .overflow-menu::part(overflow) {
@@ -390,16 +741,25 @@
     }
   }
 
- /* Show the submenus on hover */
-.menu-list__list-item:has([aria-expanded='true']) > .menu-list__submenu,
-.overflow-menu:has([slot="overflow"] [aria-expanded='true'])::part(overflow-list),
-.menu-list__submenu:is(:hover),
-.overflow-menu::part(overflow):hover {
-  --submenu-content-opacity: 1;
+  /* Show mega menu submenus on hover */
+  .menu-list__list-item:where(:not(.menu-list__list-item--dropdown)):has([aria-expanded='true']) > .menu-list__submenu,
+  .overflow-menu:has([slot='overflow'] [aria-expanded='true'])::part(overflow-list),
+  .menu-list__submenu:not(.menu-dropdown__panel):is(:hover),
+  .overflow-menu::part(overflow):hover {
+    --submenu-content-opacity: 1;
 
-  visibility: visible;
-  transition: visibility 0s, opacity var(--submenu-animation-speed) var(--ease-out-cubic);
-}
+    visibility: visible;
+    transition: visibility 0s, opacity var(--submenu-animation-speed) var(--ease-out-cubic);
+  }
+
+  .header-menu--dropdown .menu-list:where(:has(.menu-dropdown:has([aria-expanded='true']))) .menu-list__link {
+    color: rgb(var(--menu-top-level-font-color-rgb) / var(--opacity-subdued-text));
+  }
+
+  .header-menu--dropdown .menu-dropdown:where(:hover, :focus-within) .menu-dropdown__trigger,
+  .header-menu--dropdown .menu-dropdown:has([aria-expanded='true']) .menu-dropdown__trigger {
+    color: var(--menu-top-level-font-color);
+  }
 
   .overflow-menu::part(overflow) {
     --menu-top-level-font-size: var(--font-size--xlarge);
@@ -425,12 +785,17 @@
     display: contents;
     white-space: normal;
 
-    .menu-list__link {
+    .menu-list__link,
+    .menu-dropdown__trigger {
       grid-area: left;
       grid-row: auto;
       height: min-content;
       font-size: var(--font-size--xl);
       transition: var(--submenu-content-animation);
+    }
+
+    .menu-dropdown {
+      display: contents;
     }
 
     .menu-list__submenu {
@@ -439,6 +804,23 @@
       grid-area: right;
       grid-row-end: span calc(var(--overflow-count) + 1);
       padding-inline-start: var(--menu-horizontal-gap);
+    }
+
+    .menu-dropdown__panel {
+      position: relative;
+      top: auto;
+      left: auto;
+      grid-area: right;
+      grid-row: 1;
+      grid-row-end: span calc(var(--overflow-count) + 1);
+      align-self: start;
+      margin-inline-start: var(--menu-horizontal-gap);
+      visibility: hidden;
+    }
+
+    .menu-dropdown:has(.menu-dropdown__trigger[aria-expanded='true']) .menu-dropdown__panel,
+    .menu-dropdown__panel[data-active] {
+      visibility: visible;
     }
 
     .menu-list__submenu-inner {
