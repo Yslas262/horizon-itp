@@ -1,0 +1,388 @@
+{%- assign has_testimonials = false -%}
+{%- for i in (1..6) -%}
+  {%- assign text_key = 'testimonial_' | append: i | append: '_text' -%}
+  {%- if section.settings[text_key] != blank -%}
+    {%- assign has_testimonials = true -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if has_testimonials -%}
+<div class="tsc-wrap" style="
+  --tsc-radius: {{ section.settings.border_radius }}px;
+  --tsc-gap: {{ section.settings.card_gap }}px;
+  --tsc-pad-top: {{ section.settings.section_padding_top }}px;
+  --tsc-pad-bot: {{ section.settings.section_padding_bottom }}px;
+  --tsc-accent: {{ section.settings.accent_color }};
+">
+  <div class="tsc-inner">
+
+    {%- if section.settings.section_title != blank -%}
+      <h2 class="tsc-title">{{ section.settings.section_title }}</h2>
+    {%- endif -%}
+
+    <div class="tsc-grid">
+      {%- for i in (1..6) -%}
+        {%- assign text_key  = 'testimonial_' | append: i | append: '_text' -%}
+        {%- assign name_key  = 'testimonial_' | append: i | append: '_name' -%}
+        {%- assign stars_key = 'testimonial_' | append: i | append: '_stars' -%}
+        {%- assign label_key = 'testimonial_' | append: i | append: '_label' -%}
+
+        {%- if section.settings[text_key] != blank -%}
+          {%- assign star_count = section.settings[stars_key] | default: 5 -%}
+          <div class="tsc-card">
+
+            {%- if section.settings.show_stars -%}
+              <div class="tsc-stars" aria-label="{{ star_count }} de 5 estrelas">
+                {%- for s in (1..5) -%}
+                  <span class="tsc-star {% if s <= star_count %}tsc-star--filled{% else %}tsc-star--empty{% endif %}">★</span>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            <p class="tsc-text">"{{ section.settings[text_key] }}"</p>
+
+            <div class="tsc-author">
+              <span class="tsc-name">{{ section.settings[name_key] | default: 'Cliente' }}</span>
+              {%- if section.settings[label_key] != blank -%}
+                <span class="tsc-label">{{ section.settings[label_key] }}</span>
+              {%- endif -%}
+            </div>
+
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* ── Wrapper ──────────────────────────── */
+  .tsc-wrap {
+    width: 100%;
+    padding-top: var(--tsc-pad-top, 48px);
+    padding-bottom: var(--tsc-pad-bot, 48px);
+    box-sizing: border-box;
+  }
+
+  .tsc-inner {
+    max-width: var(--page-width, 1200px);
+    margin: 0 auto;
+    padding: 0 var(--page-margin, 20px);
+    box-sizing: border-box;
+  }
+
+  /* ── Título ───────────────────────────── */
+  .tsc-title {
+    text-align: center;
+    margin: 0 0 36px;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* ── Grid ─────────────────────────────── */
+  .tsc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--tsc-gap, 16px);
+  }
+
+  /* ── Card ─────────────────────────────── */
+  .tsc-card {
+    box-sizing: border-box;
+    border: 1px solid #e5e5e5;
+    border-radius: var(--tsc-radius, 12px);
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .tsc-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+  }
+
+  /* ── Estrelas ─────────────────────────── */
+  .tsc-stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .tsc-star {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .tsc-star--filled { color: var(--tsc-accent, #f5a623); }
+  .tsc-star--empty  { color: #ddd; }
+
+  /* ── Texto ────────────────────────────── */
+  .tsc-text {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    flex: 1;
+    opacity: 0.85;
+  }
+
+  /* ── Autor ────────────────────────────── */
+  .tsc-author {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .tsc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .tsc-label {
+    font-size: 0.8rem;
+    opacity: 0.5;
+  }
+
+  /* ── Tablet: 2 colunas ────────────────── */
+  @media (max-width: 900px) {
+    .tsc-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ── Mobile: 1 coluna ─────────────────── */
+  @media (max-width: 580px) {
+    .tsc-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tsc-card:hover {
+      transform: none;
+    }
+  }
+</style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Depoimentos",
+  "class": "section-wrapper",
+  "tag": "section",
+  "disabled_on": { "groups": ["header"] },
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Título da seção",
+      "default": "Quem já comprou e recomenda"
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 1"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_1_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_1_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_1_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_1_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 2"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_2_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_2_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_2_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_2_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 3"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_3_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_3_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_3_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_3_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 4"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_4_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_4_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_4_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_4_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 5"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_5_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_5_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_5_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_5_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Depoimento 6"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_6_text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_6_name",
+      "label": "Nome do cliente"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_6_label",
+      "label": "Cargo / detalhe (opcional)"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_6_stars",
+      "label": "Estrelas",
+      "min": 1, "max": 5, "step": 1, "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_stars",
+      "label": "Mostrar estrelas",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Cor das estrelas",
+      "default": "#f5a623"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Arredondamento dos cards",
+      "min": 0, "max": 24, "step": 1, "unit": "px", "default": 12
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Espaço entre os cards",
+      "min": 8, "max": 40, "step": 2, "unit": "px", "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento da seção"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Espaço superior",
+      "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Espaço inferior",
+      "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Depoimentos",
+      "category": "Texto"
+    }
+  ]
+}
+{% endschema %}

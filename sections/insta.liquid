@@ -1,0 +1,327 @@
+<div class="igc-wrap" style="
+  --igc-gap: {{ section.settings.card_gap }}px;
+  --igc-radius: {{ section.settings.border_radius }}px;
+  --igc-pad-top: {{ section.settings.section_padding_top }}px;
+  --igc-pad-bot: {{ section.settings.section_padding_bottom }}px;
+">
+  <div class="igc-inner">
+
+    {{- '<!-- Header -->' -}}
+    <div class="igc-header">
+      {%- if section.settings.section_title != blank -%}
+        <h2 class="igc-title">{{ section.settings.section_title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.instagram_handle != blank -%}
+        <a class="igc-handle" href="{{ section.settings.instagram_url }}" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          @{{ section.settings.instagram_handle | remove: '@' }}
+        </a>
+      {%- endif -%}
+    </div>
+
+    {{- '<!-- Grid de fotos -->' -}}
+    <div class="igc-grid">
+      {%- for i in (1..4) -%}
+        {%- assign img_key = 'photo_' | append: i | append: '_image' -%}
+        {%- assign alt_key = 'photo_' | append: i | append: '_alt' -%}
+
+        {%- if section.settings[img_key] != blank -%}
+          <a
+            class="igc-card"
+            href="{{ section.settings.instagram_url | default: '#' }}"
+            target="_blank"
+            rel="noopener"
+            aria-label="Ver no Instagram"
+          >
+            <div class="igc-card__img-wrap">
+              {{
+                section.settings[img_key]
+                | image_url: width: 900
+                | image_tag:
+                  loading: 'lazy',
+                  class: 'igc-card__img',
+                  alt: section.settings[alt_key] | default: 'Post Instagram',
+                  sizes: '(max-width: 580px) 75vw, 25vw'
+              }}
+              <div class="igc-card__overlay">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </div>
+            </div>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* ── Wrap ─────────────────────────────── */
+  .igc-wrap {
+    width: 100%;
+    padding-top: var(--igc-pad-top, 48px);
+    padding-bottom: var(--igc-pad-bot, 48px);
+    box-sizing: border-box;
+  }
+
+  .igc-inner {
+    max-width: var(--page-width, 1200px);
+    margin: 0 auto;
+    padding: 0 var(--page-margin, 20px);
+    box-sizing: border-box;
+  }
+
+  /* ── Header ───────────────────────────── */
+  .igc-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .igc-title {
+    margin: 0;
+    font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .igc-handle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.55;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+  }
+
+  .igc-handle:hover { opacity: 0.9; }
+
+  /* ── Grid desktop: 4 colunas ──────────── */
+  .igc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--igc-gap, 8px);
+    align-items: start;
+  }
+
+  /* ── Card ─────────────────────────────── */
+  .igc-card {
+    display: block;
+    text-decoration: none;
+    border-radius: var(--igc-radius, 8px);
+    overflow: hidden;
+  }
+
+  .igc-card__img-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .igc-card__img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .igc-card:hover .igc-card__img {
+    transform: scale(1.05);
+  }
+
+  /* Overlay IG no hover */
+  .igc-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+  }
+
+  .igc-card__overlay svg {
+    opacity: 0;
+    transform: scale(0.75);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  }
+
+  .igc-card:hover .igc-card__overlay {
+    background: rgba(0,0,0,0.3);
+  }
+
+  .igc-card:hover .igc-card__overlay svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ── Tablet: 2 colunas ────────────────── */
+  @media (max-width: 768px) {
+    .igc-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ── Mobile: scroll horizontal 1.5 cards  */
+  @media (max-width: 580px) {
+    .igc-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: var(--igc-gap, 8px);
+      /* padding lateral pra dar respiro no inicio */
+      padding-left: 0;
+      padding-right: 12px;
+    }
+
+    .igc-grid::-webkit-scrollbar { display: none; }
+
+    .igc-card {
+      flex: 0 0 72vw;
+      max-width: 72vw;
+      scroll-snap-align: start;
+    }
+
+    /* Remove zoom no touch */
+    .igc-card:hover .igc-card__img {
+      transform: scale(1);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Instagram",
+  "class": "section-wrapper",
+  "tag": "section",
+  "disabled_on": { "groups": ["header"] },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Perfil"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Título da seção",
+      "default": "Siga a gente no Instagram"
+    },
+    {
+      "type": "text",
+      "id": "instagram_handle",
+      "label": "Handle do Instagram",
+      "info": "Só o nome, sem @. Ex: minhaloja",
+      "placeholder": "minhaloja"
+    },
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Link do perfil (todas as fotos levam pra cá)"
+    },
+    {
+      "type": "header",
+      "content": "Foto 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "photo_1_image",
+      "label": "Foto 1"
+    },
+    {
+      "type": "text",
+      "id": "photo_1_alt",
+      "label": "Descrição (acessibilidade)"
+    },
+    {
+      "type": "header",
+      "content": "Foto 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "photo_2_image",
+      "label": "Foto 2"
+    },
+    {
+      "type": "text",
+      "id": "photo_2_alt",
+      "label": "Descrição (acessibilidade)"
+    },
+    {
+      "type": "header",
+      "content": "Foto 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "photo_3_image",
+      "label": "Foto 3"
+    },
+    {
+      "type": "text",
+      "id": "photo_3_alt",
+      "label": "Descrição (acessibilidade)"
+    },
+    {
+      "type": "header",
+      "content": "Foto 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "photo_4_image",
+      "label": "Foto 4"
+    },
+    {
+      "type": "text",
+      "id": "photo_4_alt",
+      "label": "Descrição (acessibilidade)"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Arredondamento das fotos",
+      "min": 0, "max": 24, "step": 1, "unit": "px", "default": 8
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Espaço entre as fotos",
+      "min": 0, "max": 24, "step": 2, "unit": "px", "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento da seção"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "label": "Espaço superior",
+      "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "label": "Espaço inferior",
+      "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram",
+      "category": "Social"
+    }
+  ]
+}
+{% endschema %}

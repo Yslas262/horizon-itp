@@ -1,0 +1,75 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "blocks": {
+        "heading": {
+          "type": "text",
+          "name": "Title",
+          "settings": {
+            "text": "<h1>{{ closest.page.title }}</h1>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "left",
+            "type_preset": "h2",
+            "font": "var(--font-primary--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "page-content": {
+          "type": "page-content",
+          "settings": {},
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "heading",
+        "page-content"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "gap": 32,
+        "color_scheme": "",
+        "padding-block-start": 40,
+        "padding-block-end": 80
+      }
+    },
+    "custom_liquid_MWFfQn": {
+      "type": "custom-liquid",
+      "name": "t:names.custom_liquid",
+      "settings": {
+        "custom_liquid": "{% comment %} Calculadora de Diluição v4 {% endcomment %}\n\n<style>\n  .cd-wrap { font-family: var(--font-body-family, sans-serif); padding: 1.5rem 1rem; }\n  .cd-card {\n    background: #001e50 !important;\n    border-radius: 20px;\n    padding: 2.5rem 2rem;\n    max-width: 520px;\n    margin: 0 auto;\n    box-sizing: border-box;\n  }\n  .cd-titulo {\n    color: #f7a60a !important;\n    font-size: 22px;\n    font-weight: 700;\n    text-align: center;\n    margin: 0 0 2rem;\n    letter-spacing: 0.02em;\n  }\n  .cd-secao {\n    background: rgba(255,255,255,0.05) !important;\n    border: 1px solid rgba(255,255,255,0.1) !important;\n    border-radius: 12px;\n    padding: 1.25rem 1.25rem 1rem;\n    margin-bottom: 1rem;\n  }\n  .cd-label {\n    color: #f7a60a !important;\n    font-size: 11px;\n    font-weight: 700;\n    letter-spacing: 0.1em;\n    text-transform: uppercase;\n    margin: 0 0 0.75rem;\n    display: block;\n  }\n  .cd-dil-row {\n    display: flex;\n    align-items: center;\n    gap: 12px;\n  }\n  .cd-dil-field {\n    flex: 1;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    gap: 6px;\n  }\n  .cd-dil-sublabel {\n    color: rgba(255,255,255,0.5) !important;\n    font-size: 11px;\n    letter-spacing: 0.05em;\n  }\n  .cd-input-num {\n    background: #0a2d6e !important;\n    border: 2px solid rgba(247,166,10,0.6) !important;\n    border-radius: 10px;\n    color: #ffffff !important;\n    font-size: 22px !important;\n    font-weight: 700;\n    text-align: center;\n    width: 100%;\n    height: 56px;\n    outline: none !important;\n    -moz-appearance: textfield;\n    box-sizing: border-box;\n    transition: border-color 0.2s, box-shadow 0.2s;\n    -webkit-text-fill-color: #ffffff !important;\n  }\n  .cd-input-num::-webkit-outer-spin-button,\n  .cd-input-num::-webkit-inner-spin-button { -webkit-appearance: none; }\n  .cd-input-num:focus {\n    border-color: #f7a60a !important;\n    box-shadow: 0 0 0 3px rgba(247,166,10,0.2) !important;\n    background: #0a2d6e !important;\n  }\n  .cd-sep {\n    color: #f7a60a !important;\n    font-size: 28px;\n    font-weight: 700;\n    line-height: 1;\n    padding-top: 18px;\n    flex-shrink: 0;\n  }\n  .cd-input-suffix { position: relative; width: 100%; }\n  .cd-input-ml {\n    background: #0a2d6e !important;\n    border: 2px solid rgba(255,255,255,0.2) !important;\n    border-radius: 10px;\n    color: #ffffff !important;\n    font-size: 18px !important;\n    font-weight: 600;\n    padding: 0 48px 0 16px;\n    height: 56px;\n    width: 100%;\n    box-sizing: border-box;\n    outline: none !important;\n    transition: border-color 0.2s, box-shadow 0.2s;\n    -moz-appearance: textfield;\n    -webkit-text-fill-color: #ffffff !important;\n  }\n  .cd-input-ml::-webkit-outer-spin-button,\n  .cd-input-ml::-webkit-inner-spin-button { -webkit-appearance: none; }\n  .cd-input-ml:focus {\n    border-color: #f7a60a !important;\n    box-shadow: 0 0 0 3px rgba(247,166,10,0.2) !important;\n    background: #0a2d6e !important;\n  }\n  .cd-input-suffix .cd-unit {\n    position: absolute;\n    right: 16px;\n    top: 50%;\n    transform: translateY(-50%);\n    color: rgba(255,255,255,0.4) !important;\n    font-size: 13px;\n    font-weight: 500;\n    pointer-events: none;\n  }\n  .cd-hint {\n    color: rgba(255,255,255,0.3) !important;\n    font-size: 11px;\n    text-align: right;\n    margin: 6px 0 0;\n  }\n  .cd-btn {\n    background: #f7a60a !important;\n    color: #001e50 !important;\n    border: none !important;\n    border-radius: 12px;\n    font-size: 16px;\n    font-weight: 800;\n    width: 100%;\n    height: 52px;\n    cursor: pointer;\n    margin-top: 0.5rem;\n    letter-spacing: 0.06em;\n    text-transform: uppercase;\n    transition: opacity 0.2s, transform 0.1s;\n    box-shadow: none !important;\n  }\n  .cd-btn:hover { opacity: 0.9 !important; background: #f7a60a !important; }\n  .cd-btn:active { transform: scale(0.98); }\n  .cd-divider {\n    border: none !important;\n    border-top: 1px solid rgba(255,255,255,0.08) !important;\n    margin: 1.5rem 0;\n  }\n  .cd-results {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    gap: 12px;\n    margin-bottom: 1rem;\n  }\n  .cd-res-card {\n    background: rgba(255,255,255,0.04) !important;\n    border: 1px solid rgba(247,166,10,0.25) !important;\n    border-radius: 12px;\n    padding: 1.25rem 1rem;\n    text-align: center;\n  }\n  .cd-res-label {\n    color: #f7a60a !important;\n    font-size: 10px;\n    font-weight: 700;\n    letter-spacing: 0.1em;\n    text-transform: uppercase;\n    margin-bottom: 10px;\n    display: block;\n  }\n  .cd-res-val {\n    color: #ffffff !important;\n    font-size: 32px;\n    font-weight: 700;\n    line-height: 1;\n  }\n  .cd-res-unit {\n    color: rgba(255,255,255,0.45) !important;\n    font-size: 15px;\n    font-weight: 400;\n    margin-left: 4px;\n  }\n  .cd-resumo {\n    color: rgba(255,255,255,0.4) !important;\n    font-size: 12px;\n    text-align: center;\n    line-height: 1.7;\n  }\n  .cd-resumo strong { color: #f7a60a !important; font-weight: 600; }\n  @media (max-width: 480px) {\n    .cd-card { padding: 1.5rem 1rem; border-radius: 14px; }\n    .cd-titulo { font-size: 18px; margin-bottom: 1.5rem; }\n    .cd-res-val { font-size: 26px; }\n    .cd-input-num { font-size: 20px !important; height: 50px; }\n    .cd-input-ml { font-size: 16px !important; height: 50px; }\n    .cd-btn { font-size: 15px; height: 48px; }\n  }\n</style>\n\n<div class=\"cd-wrap\">\n  <div class=\"cd-card\">\n\n    <p class=\"cd-titulo\">Calculadora de Diluição</p>\n\n    <div class=\"cd-secao\">\n      <label class=\"cd-label\">Diluição</label>\n      <div class=\"cd-dil-row\">\n        <div class=\"cd-dil-field\">\n          <span class=\"cd-dil-sublabel\">Produto</span>\n          <input class=\"cd-input-num\" type=\"number\" id=\"cd-dil1\" value=\"1\" min=\"1\">\n        </div>\n        <span class=\"cd-sep\">:</span>\n        <div class=\"cd-dil-field\">\n          <span class=\"cd-dil-sublabel\">Partes</span>\n          <input class=\"cd-input-num\" type=\"number\" id=\"cd-dil2\" value=\"30\" min=\"1\">\n        </div>\n      </div>\n    </div>\n\n    <div class=\"cd-secao\">\n      <label class=\"cd-label\">Volume do Recipiente</label>\n      <div class=\"cd-input-suffix\">\n        <input class=\"cd-input-ml\" type=\"number\" id=\"cd-recipiente\" value=\"1000\" min=\"1\" placeholder=\"1000\">\n        <span class=\"cd-unit\">ml</span>\n      </div>\n      <p class=\"cd-hint\">1L = 1.000ml &nbsp;·&nbsp; 5L = 5.000ml &nbsp;·&nbsp; 50L = 50.000ml</p>\n    </div>\n\n    <button class=\"cd-btn\" onclick=\"cdCalcular()\">Calcular</button>\n\n    <hr class=\"cd-divider\">\n\n    <div class=\"cd-results\">\n      <div class=\"cd-res-card\">\n        <span class=\"cd-res-label\">Quantidade de Produto</span>\n        <div id=\"cd-res-produto\" class=\"cd-res-val\">—</div>\n      </div>\n      <div class=\"cd-res-card\">\n        <span class=\"cd-res-label\">Quantidade de Água</span>\n        <div id=\"cd-res-agua\" class=\"cd-res-val\">—</div>\n      </div>\n    </div>\n\n    <div id=\"cd-resumo\" class=\"cd-resumo\"></div>\n\n  </div>\n</div>\n\n<script>\n  function cdCalcular() {\n    var d1 = parseInt(document.getElementById('cd-dil1').value) || 1;\n    var d2 = parseInt(document.getElementById('cd-dil2').value) || 30;\n    var total = parseInt(document.getElementById('cd-recipiente').value) || 0;\n    if (total <= 0 || d1 <= 0 || d2 <= 0) return;\n\n    var produto = Math.round(d2 * (total / 1000));\n    var agua = total - produto;\n\n    function fmt(n) { return n.toLocaleString('pt-BR'); }\n\n    document.getElementById('cd-res-produto').innerHTML =\n      fmt(produto) + '<span class=\"cd-res-unit\">ml</span>';\n    document.getElementById('cd-res-agua').innerHTML =\n      fmt(agua) + '<span class=\"cd-res-unit\">ml</span>';\n    document.getElementById('cd-resumo').innerHTML =\n      'Para <strong>' + fmt(total) + ' ml</strong> no recipiente: <strong>' +\n      fmt(produto) + ' ml</strong> de produto + <strong>' + fmt(agua) + ' ml</strong> de água';\n  }\n\n  document.getElementById('cd-dil1').addEventListener('input', cdCalcular);\n  document.getElementById('cd-dil2').addEventListener('input', cdCalcular);\n  document.getElementById('cd-recipiente').addEventListener('input', cdCalcular);\n\n  cdCalcular();\n</script>",
+        "color_scheme": "",
+        "section_width": "page-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    }
+  },
+  "order": [
+    "main",
+    "custom_liquid_MWFfQn"
+  ]
+}

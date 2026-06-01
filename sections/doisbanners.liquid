@@ -1,0 +1,402 @@
+<div class="split-showcase-custom" id="split-showcase-{{ section.id }}" style="
+  --ssc-gap: {{ section.settings.gap }}px;
+  --ssc-height: {{ section.settings.section_height }}vh;
+  --ssc-mobile-height: {{ section.settings.mobile_card_height }}vh;
+  --ssc-pad-bottom: {{ section.settings.padding_bottom }}px;
+  --ssc-pad-inline: {{ section.settings.padding_inline }}px;
+  --ssc-overlay: {{ section.settings.overlay_color | default: '#00000066' }};
+  --ssc-radius: {{ section.settings.border_radius }}px;
+">
+
+  {%- assign cards = '1,2' | split: ',' -%}
+  {%- for i in cards -%}
+    {%- assign img_key        = 'card' | append: i | append: '_image' -%}
+    {%- assign img_mobile_key = 'card' | append: i | append: '_image_mobile' -%}
+    {%- assign head_key       = 'card' | append: i | append: '_heading' -%}
+    {%- assign label_key      = 'card' | append: i | append: '_label' -%}
+    {%- assign link_key       = 'card' | append: i | append: '_link' -%}
+    {%- assign placeholder    = 'hero-apparel-' | append: i -%}
+
+    {%- assign card_link = section.settings[link_key] -%}
+    {%- assign has_link  = true -%}
+    {%- if card_link == blank -%}{%- assign has_link = false -%}{%- endif -%}
+
+    <a
+      class="ssc__card"
+      {% if has_link %}href="{{ card_link }}"{% else %}aria-disabled="true" tabindex="-1"{% endif %}
+      aria-label="{{ section.settings[head_key] }}"
+    >
+      <div class="ssc__bg">
+        {%- if section.settings[img_key] != blank -%}
+          {%- comment -%} Desktop image {%- endcomment -%}
+          {{
+            section.settings[img_key]
+            | image_url: width: 1400
+            | image_tag:
+              loading: 'lazy',
+              class: 'ssc__img ssc__img--desktop',
+              alt: section.settings[head_key],
+              sizes: '(max-width: 749px) 100vw, 50vw'
+          }}
+          {%- comment -%} Mobile image (se tiver, senão cai no desktop) {%- endcomment -%}
+          {%- if section.settings[img_mobile_key] != blank -%}
+            {{
+              section.settings[img_mobile_key]
+              | image_url: width: 800
+              | image_tag:
+                loading: 'lazy',
+                class: 'ssc__img ssc__img--mobile',
+                alt: section.settings[head_key],
+                sizes: '100vw'
+            }}
+          {%- endif -%}
+        {%- else -%}
+          {{ placeholder | placeholder_svg_tag: 'ssc__img ssc__img--svg' }}
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.toggle_overlay -%}
+        <div class="ssc__overlay"></div>
+      {%- endif -%}
+
+      <div class="ssc__content">
+        {%- if section.settings[head_key] != blank -%}
+          <p class="ssc__heading">{{ section.settings[head_key] }}</p>
+        {%- endif -%}
+        {%- if section.settings[label_key] != blank -%}
+          <span class="ssc__btn">{{ section.settings[label_key] }}</span>
+        {%- endif -%}
+      </div>
+    </a>
+  {%- endfor -%}
+
+</div>
+
+<style>
+  /* ── Wrapper ─────────────────────────────────────── */
+  .split-showcase-custom {
+    display: flex;
+    flex-direction: row;
+    gap: var(--ssc-gap, 0px);
+    width: 100%;
+    max-width: var(--page-width, 1200px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-margin, 20px);
+    padding-right: var(--page-margin, 20px);
+    height: var(--ssc-height, 60vh);
+    max-height: 90vh;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* ── Card ────────────────────────────────────────── */
+  .ssc__card {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: var(--ssc-radius, 0px);
+  }
+
+  .ssc__card[aria-disabled="true"] {
+    pointer-events: none;
+    cursor: default;
+  }
+
+  /* ── Fundo ───────────────────────────────────────── */
+  .ssc__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── Imagens ─────────────────────────────────────── */
+  .ssc__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+
+  .ssc__img--svg {
+    object-fit: cover;
+  }
+
+  /* Desktop: mostra desktop, esconde mobile */
+  .ssc__img--desktop { display: block; }
+  .ssc__img--mobile  { display: none;  position: absolute; inset: 0; }
+
+  /* Mobile: troca imagens se houver mobile image */
+  @media (max-width: 749px) {
+    .ssc__img--desktop { display: none; }
+    .ssc__img--mobile  { display: block; position: absolute; inset: 0; }
+
+    /* Se não tem imagem mobile, volta a mostrar a desktop */
+    .ssc__bg:not(:has(.ssc__img--mobile)) .ssc__img--desktop {
+      display: block;
+    }
+  }
+
+  .ssc__card:hover .ssc__img {
+    transform: scale(1.07);
+  }
+
+  /* Desativa zoom em touch */
+  @media (hover: none) {
+    .ssc__card:hover .ssc__img {
+      transform: scale(1);
+    }
+  }
+
+  /* ── Overlay ─────────────────────────────────────── */
+  .ssc__overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--ssc-overlay, rgba(0,0,0,0.4));
+    pointer-events: none;
+    z-index: 1;
+    border-radius: var(--ssc-radius, 0px);
+  }
+
+  /* ── Conteúdo ────────────────────────────────────── */
+  .ssc__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: var(--ssc-pad-bottom, 40px);
+    padding-left: var(--ssc-pad-inline, 24px);
+    padding-right: var(--ssc-pad-inline, 24px);
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ssc__heading {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1rem, 2.5vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+
+  .ssc__btn {
+    display: inline-block;
+    color: #fff;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+    padding-bottom: 2px;
+    transition: border-color 0.3s ease, letter-spacing 0.3s ease;
+  }
+
+  .ssc__card:hover .ssc__btn {
+    border-color: #fff;
+    letter-spacing: 0.12em;
+  }
+
+  /* ── Mobile ──────────────────────────────────────── */
+  @media (max-width: 749px) {
+    .split-showcase-custom {
+      flex-direction: column;
+      height: auto;
+      max-height: none;
+      padding-left: var(--page-margin, 16px);
+      padding-right: var(--page-margin, 16px);
+    }
+
+    .ssc__card {
+      height: var(--ssc-mobile-height, 45vh);
+      min-height: 240px;
+    }
+
+    .ssc__heading {
+      font-size: clamp(1rem, 5vw, 1.5rem);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Split Showcase Custom",
+  "class": "section-wrapper",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "card1_image",
+      "label": "Imagem desktop — card 1",
+      "info": "Recomendado: 1400 × 900px (proporção 16:10)"
+    },
+    {
+      "type": "image_picker",
+      "id": "card1_image_mobile",
+      "label": "Imagem mobile — card 1 (opcional)",
+      "info": "Recomendado: 800 × 900px (proporção 9:10, retrato)"
+    },
+    {
+      "type": "text",
+      "id": "card1_heading",
+      "label": "Título do card 1",
+      "default": "New Arrivals"
+    },
+    {
+      "type": "text",
+      "id": "card1_label",
+      "label": "Texto do botão 1",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "card1_link",
+      "label": "Link do card 1"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "card2_image",
+      "label": "Imagem desktop — card 2",
+      "info": "Recomendado: 1400 × 900px (proporção 16:10)"
+    },
+    {
+      "type": "image_picker",
+      "id": "card2_image_mobile",
+      "label": "Imagem mobile — card 2 (opcional)",
+      "info": "Recomendado: 800 × 900px (proporção 9:10, retrato)"
+    },
+    {
+      "type": "text",
+      "id": "card2_heading",
+      "label": "Título do card 2",
+      "default": "Bestsellers"
+    },
+    {
+      "type": "text",
+      "id": "card2_label",
+      "label": "Texto do botão 2",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "card2_link",
+      "label": "Link do card 2"
+    },
+    {
+      "type": "header",
+      "content": "Tamanho"
+    },
+    {
+      "type": "range",
+      "id": "section_height",
+      "label": "Altura da seção (desktop)",
+      "info": "Em % da altura da tela",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "mobile_card_height",
+      "label": "Altura de cada card (mobile)",
+      "info": "Em % da altura da tela",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "vh",
+      "default": 45
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Espaço entre os cards",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaço interno inferior",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_inline",
+      "label": "Espaço interno lateral",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Arredondamento dos cards",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "toggle_overlay",
+      "label": "Ativar overlay escuro",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Cor do overlay",
+      "default": "#00000066"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Split Showcase Custom",
+      "category": "Banners"
+    }
+  ]
+}
+{% endschema %}
