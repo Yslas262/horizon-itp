@@ -2604,7 +2604,7 @@ deferred-media[class] :is(.deferred-media__poster-button img, .deferred-media__p
   color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
 }
 
-product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > *:not(.tax-note, .installment-price--product-page) {
+product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > *:not(.tax-note, .installment-product-page) {
   margin-block: 0;
 }
 

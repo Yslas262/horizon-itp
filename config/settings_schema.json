@@ -2300,12 +2300,23 @@
       {
         "type": "range",
         "id": "installments_font_size",
-        "label": "t:settings.installments_font_size",
-        "min": 10,
-        "max": 18,
+        "label": "t:settings.installments_font_size_cards",
+        "min": 12,
+        "max": 24,
         "step": 1,
         "unit": "px",
         "default": 12,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "range",
+        "id": "installments_font_size_product_page",
+        "label": "t:settings.installments_font_size_product_page",
+        "min": 12,
+        "max": 24,
+        "step": 1,
+        "unit": "px",
+        "default": 13,
         "visible_if": "{{ settings.installments_enabled }}"
       },
       {

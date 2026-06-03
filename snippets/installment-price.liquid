@@ -96,14 +96,20 @@
     endif
 
     assign installment_color = settings.installments_text_color | default: ''
-    assign installment_font_size = settings.installments_font_size | default: 12
+
+    if template.name == 'product'
+      assign installment_font_size = settings.installments_font_size_product_page | default: 13
+    else
+      assign installment_font_size = settings.installments_font_size | default: 12
+    endif
   -%}
 
   {%- if installment_cents > 0 -%}
     {%- if template.name == 'product' -%}
       <small
-        class="installment-price installment-price--product-page"
+        class="installment-price installment-product-page"
         ref="installmentPrice"
+        style="--installment-font-size: {{ installment_font_size }}px;"
       >
         {{-
           'content.installment_display'
@@ -112,7 +118,7 @@
       </small>
     {%- else -%}
       <p
-        class="installment-price"
+        class="installment-price installment-product-card"
         ref="installmentPrice"
         style="
           {%- if installment_color != blank -%}
@@ -145,7 +151,7 @@
     color: var(--installment-color, rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text)));
   }
 
-  product-price:not(:has(.installment-price--product-page)) .installment-price {
+  product-price:not(:has(.installment-product-page)) .installment-price {
     margin-block-start: 0.25em;
   }
 {% endstylesheet %}

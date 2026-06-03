@@ -379,6 +379,8 @@
     "installments_show_com_juros_label": "Exibir texto \"com juros\"",
     "installments_text_color": "Cor do texto",
     "installments_font_size": "Tamanho da fonte",
+    "installments_font_size_cards": "Tamanho da fonte dos cards de produto",
+    "installments_font_size_product_page": "Tamanho da fonte da página de produto",
     "installments_show_home": "Mostrar nos cartões de produto",
     "installments_show_product_page": "Mostrar na página de produto",
     "installments_use_minimum": "Mostrar apenas acima do valor mínimo",
