@@ -131,6 +131,29 @@ class HeaderMenu extends Component {
   }
 
   /**
+   * Close every submenu panel — only one may be `data-active` at a time.
+   */
+  #clearAllActivePanels() {
+    this.querySelectorAll('.menu-dropdown__panel[data-active], .menu-list__submenu[data-active]').forEach(
+      (panel) => {
+        delete panel.dataset.active;
+      }
+    );
+  }
+
+  /**
+   * Keep a single expanded trigger for accessibility and CSS `:has()` rules.
+   * @param {HTMLElement | null} activeItem
+   */
+  #syncAriaExpanded(activeItem) {
+    this.querySelectorAll('[ref="menuitem"][aria-haspopup="true"]').forEach((trigger) => {
+      if (trigger instanceof HTMLElement) {
+        trigger.ariaExpanded = trigger === activeItem ? 'true' : 'false';
+      }
+    });
+  }
+
+  /**
    * Keyboard support for dropdown submenus (Escape, ArrowDown into panel).
    * @param {KeyboardEvent} event
    */
@@ -239,15 +262,10 @@ class HeaderMenu extends Component {
 
     this.dataset.overflowExpanded = (!isDefaultSlot).toString();
 
-    const previouslyActiveItem = this.#state.activeItem;
-
-    if (previouslyActiveItem) {
-      previouslyActiveItem.ariaExpanded = 'false';
-    }
-
+    this.#clearAllActivePanels();
     this.#state.activeItem = item;
     this.ariaExpanded = 'true';
-    item.ariaExpanded = 'true';
+    this.#syncAriaExpanded(item);
 
     if (isTextDropdown) {
       this.headerComponent.style.setProperty('--submenu-height', '0px');
@@ -340,7 +358,6 @@ class HeaderMenu extends Component {
 
     if (this.overflowListHovered || this.overflowMenu?.matches(':hover')) return;
 
-    const submenu = findSubmenu(item);
     const isTextDropdown = this.#isTextDropdownMode && item.closest('[data-menu-dropdown]');
 
     this.headerComponent?.style.setProperty('--submenu-height', '0px');
@@ -350,11 +367,8 @@ class HeaderMenu extends Component {
 
     this.#state.activeItem = null;
     this.ariaExpanded = 'false';
-    item.ariaExpanded = 'false';
-
-    if (submenu) {
-      delete submenu.dataset.active;
-    }
+    this.#syncAriaExpanded(null);
+    this.#clearAllActivePanels();
 
     if (isTextDropdown) {
       return;
