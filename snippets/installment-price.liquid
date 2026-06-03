@@ -1,0 +1,151 @@
+{%- doc -%}
+  Renders installment pricing for a product. All calculation and visibility logic lives here.
+
+  @param {product} product_resource - The product to render installments for
+  @param {number} [price_cents] - Optional price override in cents (e.g. price_min for "from" pricing)
+{%- enddoc -%}
+
+{%- liquid
+  assign render_installment = false
+
+  if settings.installments_enabled
+    assign show_for_context = false
+    if template.name == 'product' and settings.installments_show_product_page
+      assign show_for_context = true
+    elsif template.name != 'product' and settings.installments_show_home
+      assign show_for_context = true
+    endif
+
+    if show_for_context and product_resource != blank
+      assign selected_variant = product_resource.selected_or_first_available_variant
+
+      if selected_variant != blank
+        if price_cents == blank
+          assign price_cents = selected_variant.price
+        endif
+
+        if price_cents != blank and price_cents > 0
+          assign passes_minimum = true
+          if settings.installments_use_minimum
+            assign minimum_cents = settings.installments_minimum_value | times: 100
+            if price_cents < minimum_cents
+              assign passes_minimum = false
+            endif
+          endif
+
+          if passes_minimum
+            assign render_installment = true
+          endif
+        endif
+      endif
+    endif
+  endif
+-%}
+
+{%- if render_installment -%}
+  {%- liquid
+    assign installment_count = settings.installments_max_count | default: 12
+    if installment_count < 2
+      assign installment_count = 2
+    endif
+
+    assign monthly_rate = settings.installments_monthly_rate | default: 0 | plus: 0
+    assign has_interest = false
+    if monthly_rate > 0
+      assign has_interest = true
+    endif
+
+    if has_interest
+      assign rate_decimal = monthly_rate | times: 1.0 | divided_by: 100.0
+      assign one_plus_rate = rate_decimal | plus: 1.0
+      assign compound_factor = 1.0
+
+      for i in (1..installment_count)
+        assign compound_factor = compound_factor | times: one_plus_rate
+      endfor
+
+      assign price_amount = price_cents | times: 1.0 | divided_by: 100.0
+      assign numerator = price_amount | times: rate_decimal | times: compound_factor
+      assign denominator = compound_factor | minus: 1.0
+      assign installment_amount = numerator | divided_by: denominator
+      assign installment_cents = installment_amount | times: 100.0 | round
+    else
+      assign installment_cents = price_cents | times: 1.0 | divided_by: installment_count | round
+    endif
+
+    assign interest_suffix = ''
+    if has_interest and settings.installments_show_com_juros_label
+      assign interest_suffix = 'content.installment_interest_suffix' | t
+    elsif has_interest == false and settings.installments_show_sem_juros_label
+      assign interest_suffix = 'content.installment_interest_free_suffix' | t
+    endif
+
+    assign use_currency = false
+    if template.name == 'product'
+      if settings.currency_code_enabled_product_pages
+        assign use_currency = true
+      endif
+    elsif settings.currency_code_enabled_product_cards
+      assign use_currency = true
+    endif
+
+    if use_currency
+      assign installment_formatted = installment_cents | money_with_currency
+    else
+      assign installment_formatted = installment_cents | money
+    endif
+
+    assign installment_color = settings.installments_text_color | default: ''
+    assign installment_font_size = settings.installments_font_size | default: 12
+  -%}
+
+  {%- if installment_cents > 0 -%}
+    {%- if template.name == 'product' -%}
+      <small
+        class="installment-price installment-price--product-page"
+        ref="installmentPrice"
+      >
+        {{-
+          'content.installment_display'
+          | t: count: installment_count, price: installment_formatted, interest_suffix: interest_suffix
+        -}}
+      </small>
+    {%- else -%}
+      <p
+        class="installment-price"
+        ref="installmentPrice"
+        style="
+          {%- if installment_color != blank -%}
+            --installment-color: {{ installment_color }};
+          {%- else -%}
+            --installment-color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+          {%- endif -%}
+          --installment-font-size: {{ installment_font_size }}px;
+        "
+      >
+        {{-
+          'content.installment_display'
+          | t: count: installment_count, price: installment_formatted, interest_suffix: interest_suffix
+        -}}
+      </p>
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .installment-price {
+    display: block;
+    margin-block-start: 0.35em;
+    font-family: var(--font-body--family);
+    font-weight: normal;
+    font-size: var(--installment-font-size, var(--font-size--xs));
+    line-height: 1.4;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--installment-color, rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text)));
+  }
+
+  product-price:not(:has(.installment-price--product-page)) .installment-price {
+    margin-block-start: 0.25em;
+  }
+{% endstylesheet %}

@@ -270,6 +270,18 @@ export class ProductCard extends ProductCardLink {
     if (newPriceElement && priceContainer) {
       morph(priceContainer, newPriceElement);
     }
+
+    const installmentEl = this.querySelector('product-price [ref="installmentPrice"]');
+    const newInstallment = event.detail.data.html.querySelector('product-price [ref="installmentPrice"]');
+
+    if (!newInstallment) {
+      installmentEl?.remove();
+    } else if (installmentEl) {
+      morph(installmentEl, newInstallment);
+    } else {
+      const anchor = this.querySelector('product-price [ref="volumePricingNote"]') ?? priceContainer;
+      anchor?.insertAdjacentElement('afterend', /** @type {Element} */ (newInstallment.cloneNode(true)));
+    }
   }
 
   /**

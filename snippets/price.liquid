@@ -124,3 +124,13 @@
 {%- if has_volume_pricing -%}
   <small ref="volumePricingNote" class="volume-pricing-note">{{ 'content.volume_pricing_available' | t }}</small>
 {%- endif -%}
+
+{%- liquid
+  assign show_installment_rendering = show_installment
+  if show_installment_rendering == nil
+    assign show_installment_rendering = true
+  endif
+-%}
+{%- if show_installment_rendering -%}
+  {%- render 'installment-price', product_resource: product_resource -%}
+{%- endif -%}

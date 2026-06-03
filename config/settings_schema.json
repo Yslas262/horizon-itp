@@ -2237,6 +2237,114 @@
     ]
   },
   {
+    "name": "t:names.installments",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "installments_enabled",
+        "label": "t:settings.installments_enabled",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "t:content.installments_calculation"
+      },
+      {
+        "type": "range",
+        "id": "installments_max_count",
+        "label": "t:settings.installments_max_count",
+        "min": 2,
+        "max": 24,
+        "step": 1,
+        "default": 12,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "range",
+        "id": "installments_monthly_rate",
+        "label": "t:settings.installments_monthly_rate",
+        "min": 0,
+        "max": 10,
+        "step": 0.1,
+        "unit": "%",
+        "default": 0,
+        "info": "t:info.installments_monthly_rate",
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_show_sem_juros_label",
+        "label": "t:settings.installments_show_sem_juros_label",
+        "default": true,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_show_com_juros_label",
+        "label": "t:settings.installments_show_com_juros_label",
+        "default": true,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "header",
+        "content": "t:content.installments_display",
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "color",
+        "id": "installments_text_color",
+        "label": "t:settings.installments_text_color",
+        "alpha": true,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "range",
+        "id": "installments_font_size",
+        "label": "t:settings.installments_font_size",
+        "min": 10,
+        "max": 18,
+        "step": 1,
+        "unit": "px",
+        "default": 12,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "header",
+        "content": "t:content.installments_visibility",
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_show_home",
+        "label": "t:settings.installments_show_home",
+        "info": "t:info.installments_show_home",
+        "default": true,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_show_product_page",
+        "label": "t:settings.installments_show_product_page",
+        "default": true,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_use_minimum",
+        "label": "t:settings.installments_use_minimum",
+        "default": false,
+        "visible_if": "{{ settings.installments_enabled }}"
+      },
+      {
+        "type": "number",
+        "id": "installments_minimum_value",
+        "label": "t:settings.installments_minimum_value",
+        "default": 50,
+        "visible_if": "{{ settings.installments_enabled and settings.installments_use_minimum }}"
+      }
+    ]
+  },
+  {
     "name": "t:names.variant_pickers",
     "settings": [
       {

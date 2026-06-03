@@ -254,6 +254,9 @@
       "next": "Próxima",
       "page": "Página {{ page }}"
     },
+    "installment_display": "Em até {{ count }}x de {{ price }}{{ interest_suffix }}",
+    "installment_interest_free_suffix": " sem juros",
+    "installment_interest_suffix": " com juros",
     "volume_pricing_available": "Os preços por volume estão disponíveis",
     "volume_pricing": "Preços por volume",
     "at_price_each": "{{ price }}/cada",
