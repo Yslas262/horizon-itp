@@ -43,6 +43,7 @@
   style="
     {% render 'typography-style', settings: block_settings %}
     {% render 'spacing-style', settings: block_settings %}
+    {% unless template.name == 'product' %}{% render 'installment-product-card-variables' %}{% endunless %}
     --width: {{ block_settings.width }};
   "
   {{ block.shopify_attributes }}
@@ -114,50 +115,6 @@
     color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
   }
 
-  /* Installment on product page: secondary line below price (same tier as unit-price / tax-note) */
-  product-price .installment-product-page,
-  product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) .installment-product-page {
-    display: block;
-    margin-block: var(--padding-xs) 0;
-    margin-inline: 0;
-    padding: 0;
-    max-width: 100%;
-    font-family: var(--font-body--family);
-    font-style: var(--font-body--style);
-    font-weight: var(--font-body--weight);
-    font-size: var(--installment-font-size, min(0.8125rem, var(--font-size--xs)));
-    line-height: 1.45;
-    letter-spacing: normal;
-    text-transform: none;
-    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
-  }
-
-  product-price [ref='priceContainer'] + .installment-product-page,
-  product-price .volume-pricing-note + .installment-product-page {
-    margin-block-start: var(--padding-xs);
-  }
-
-  product-price.text-block--align-center .installment-product-page,
-  product-price.text-center .installment-product-page {
-    text-align: center;
-  }
-
-  product-price.text-block--align-right .installment-product-page,
-  product-price.text-right .installment-product-page {
-    text-align: right;
-  }
-
-  @media screen and (max-width: 749px) {
-    product-price .installment-product-page,
-    product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) .installment-product-page {
-      line-height: 1.5;
-    }
-
-    product-price [ref='priceContainer'] + .installment-product-page,
-    product-price .volume-pricing-note + .installment-product-page {
-      margin-block-start: var(--padding-xs);
-    }
-  }
 {% endstylesheet %}
 
 {% schema %}

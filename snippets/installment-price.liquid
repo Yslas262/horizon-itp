@@ -95,21 +95,17 @@
       assign installment_formatted = installment_cents | money
     endif
 
-    assign installment_color = settings.installments_text_color | default: ''
-
     if template.name == 'product'
       assign installment_font_size = settings.installments_font_size_product_page | default: 13
-    else
-      assign installment_font_size = settings.installments_font_size | default: 12
     endif
   -%}
 
   {%- if installment_cents > 0 -%}
     {%- if template.name == 'product' -%}
       <small
-        class="installment-price installment-product-page"
+        class="installment-product-page"
         ref="installmentPrice"
-        style="--installment-font-size: {{ installment_font_size }}px;"
+        style="--installment-product-page-size: {{ installment_font_size }}px;"
       >
         {{-
           'content.installment_display'
@@ -117,41 +113,81 @@
         -}}
       </small>
     {%- else -%}
-      <p
-        class="installment-price installment-product-card"
-        ref="installmentPrice"
-        style="
-          {%- if installment_color != blank -%}
-            --installment-color: {{ installment_color }};
-          {%- else -%}
-            --installment-color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
-          {%- endif -%}
-          --installment-font-size: {{ installment_font_size }}px;
-        "
-      >
+      <small class="installment-product-card" ref="installmentPrice">
         {{-
           'content.installment_display'
           | t: count: installment_count, price: installment_formatted, interest_suffix: interest_suffix
         -}}
-      </p>
+      </small>
     {%- endif -%}
   {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
-  .installment-price {
+  /* Product page */
+  .installment-product-page,
+  product-price .installment-product-page,
+  product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) .installment-product-page {
     display: block;
-    margin-block-start: 0.35em;
+    margin-block: var(--padding-xs) 0;
+    margin-inline: 0;
+    padding: 0;
+    max-width: 100%;
     font-family: var(--font-body--family);
-    font-weight: normal;
-    font-size: var(--installment-font-size, var(--font-size--xs));
-    line-height: 1.4;
+    font-style: var(--font-body--style);
+    font-weight: var(--font-body--weight);
+    font-size: var(--installment-product-page-size, min(0.8125rem, var(--font-size--xs)));
+    line-height: 1.45;
     letter-spacing: normal;
     text-transform: none;
-    color: var(--installment-color, rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text)));
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+    text-align: inherit;
   }
 
-  product-price:not(:has(.installment-product-page)) .installment-price {
-    margin-block-start: 0.25em;
+  product-price [ref='priceContainer'] + .installment-product-page,
+  product-price .volume-pricing-note + .installment-product-page {
+    margin-block-start: var(--padding-xs);
+  }
+
+  /* Product cards — single visual system (product-card, resource-card, product-price) */
+  .installment-product-card,
+  product-card .installment-product-card,
+  product-card product-price .installment-product-card,
+  .resource-card[data-resource-type='product'] .installment-product-card,
+  product-price .installment-product-card,
+  .text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > .installment-product-card,
+  product-price:is(.h1, .h2, .h3, .h4, .h5, .h6) > .installment-product-card,
+  product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > .installment-product-card,
+  product-price.custom-typography .installment-product-card {
+    display: block;
+    margin-block: var(--padding-xs) 0;
+    margin-inline: 0;
+    padding: 0;
+    max-width: 100%;
+    font-family: var(--font-body--family);
+    font-style: var(--font-body--style);
+    font-weight: var(--font-body--weight);
+    font-size: var(--installment-product-card-size, var(--font-size--xs));
+    line-height: 1.45;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--installment-product-card-color, rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text)));
+    text-align: inherit;
+  }
+
+  product-card [ref='priceContainer'] + .installment-product-card,
+  product-card .volume-pricing-note + .installment-product-card,
+  .resource-card[data-resource-type='product'] [ref='priceContainer'] + .installment-product-card,
+  .resource-card[data-resource-type='product'] .volume-pricing-note + .installment-product-card,
+  product-price [ref='priceContainer'] + .installment-product-card,
+  product-price .volume-pricing-note + .installment-product-card {
+    margin-block-start: var(--padding-xs);
+  }
+
+  @media screen and (max-width: 749px) {
+    .installment-product-page,
+    .installment-product-card {
+      line-height: 1.5;
+    }
   }
 {% endstylesheet %}

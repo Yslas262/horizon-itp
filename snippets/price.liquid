@@ -5,6 +5,8 @@
   @param {product} product_resource - The product to render
   @param {boolean} [show_unit_price] - Whether to show the unit price
   @param {boolean} [show_sale_price_first] - Whether to show the sale price first
+  @param {string} [from_price_text] - Pre-formatted price line (e.g. "from" pricing on cards)
+  @param {number} [installment_price_cents] - Price in cents for installment when using from_price_text
 {%- enddoc -%}
 
 {%- liquid
@@ -73,7 +75,9 @@
 -%}
 
 <div ref="priceContainer">
-  {% if has_volume_pricing %}
+  {% if from_price_text != blank %}
+    <span class="price">{{ from_price_text }}</span>
+  {% elsif has_volume_pricing %}
     {% comment %} Volume pricing display {% endcomment %}
     {% if show_compare_price %}
       <span role="group">
@@ -132,5 +136,11 @@
   endif
 -%}
 {%- if show_installment_rendering -%}
-  {%- render 'installment-price', product_resource: product_resource -%}
+  {%- liquid
+    assign installment_calculation_cents = installment_price_cents
+    if installment_calculation_cents == blank
+      assign installment_calculation_cents = selected_variant.price
+    endif
+  -%}
+  {%- render 'installment-price', product_resource: product_resource, price_cents: installment_calculation_cents -%}
 {%- endif -%}

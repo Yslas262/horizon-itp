@@ -1,0 +1,13 @@
+{%- doc -%}
+  Emits CSS custom properties for product card installment styling.
+  Used on product-card and resource-card (product) so all cards share one visual system.
+{%- enddoc -%}
+
+{%- liquid
+  if settings.installments_enabled and settings.installments_show_home
+    echo '--installment-product-card-size: ' | append: settings.installments_font_size | default: 12 | append: 'px;'
+    if settings.installments_text_color != blank
+      echo ' --installment-product-card-color: ' | append: settings.installments_text_color | append: ';'
+    endif
+  endif
+-%}

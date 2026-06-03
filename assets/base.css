@@ -2604,8 +2604,20 @@ deferred-media[class] :is(.deferred-media__poster-button img, .deferred-media__p
   color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
 }
 
-product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > *:not(.tax-note, .installment-product-page) {
+product-price.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > *:not(.tax-note, .installment-product-page, .installment-product-card) {
   margin-block: 0;
+}
+
+.text-block:is(.h1, .h2, .h3, .h4, .h5, .h6) > .installment-product-card,
+product-price:is(.h1, .h2, .h3, .h4, .h5, .h6) > .installment-product-card {
+  font-family: var(--font-body--family);
+  font-style: var(--font-body--style);
+  font-weight: var(--font-body--weight);
+  font-size: var(--installment-product-card-size, var(--font-size--xs));
+  line-height: 1.45;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--installment-product-card-color, rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text)));
 }
 
 .compare-at-price {

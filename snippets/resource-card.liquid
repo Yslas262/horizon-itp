@@ -44,6 +44,9 @@
 <div
   class="resource-card{% if style == 'overlay' %} resource-card--overlay{% endif %}"
   data-resource-type="{{ resource_type }}"
+  {% if resource_type == 'product' %}
+    style="{% render 'installment-product-card-variables' %}"
+  {% endif %}
 >
   <a
     class="resource-card__link"
